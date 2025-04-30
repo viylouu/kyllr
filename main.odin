@@ -52,6 +52,8 @@ munee :: struct {
     amt: u32
 }; munnees: ^[dynamic]munee
 
+dolla_dolla: u32
+
 
 /// ----   player   ---- ///
 pos: vec2
@@ -74,6 +76,7 @@ main :: proc() { kuru.master("kyllr", 1280,720, init,tick,draw,quit) }
 init :: proc() { 
     boolets = new([dynamic]boolet)
     enemies = new([dynamic]enemy)
+    munnees = new([dynamic]munee)
 
     pos = vec2{320,180}
 
@@ -91,6 +94,8 @@ tick :: proc() {
         update_enemies()
 
         update_bullets()
+
+        update_munnees()
 
         update_cooled -= update_delta
     }
@@ -122,7 +127,13 @@ draw :: proc() {
             for i := 0; i < len(enemies); i += 1 { d.fcirc(enemies[i].pos.x-6,enemies[i].pos.y-6,12) }
         }
 
-        rl.DrawText(strings.clone_to_cstring(strconv.append_int(buf[:], i64(len(enemies)), 10)), 0, 20, 20, rl.DARKGREEN)
+        /* moneys */ {
+            d.fill(255,0,255)
+
+            for i := 0; i < len(munnees); i += 1 { d.frect(munnees[i].pos.x-2,munnees[i].pos.y-2,4,4) }
+        }
+
+        rl.DrawText(strings.clone_to_cstring(strconv.append_int(buf[:], i64(dolla_dolla), 10)), 0, 20, 20, rl.DARKGREEN)
         rl.DrawFPS(0,0)
     rl.EndTextureMode()
 
@@ -170,6 +181,24 @@ update_player :: proc() {
     }
 }
 
+update_munnees :: proc() {
+    for i := 0; i < len(munnees); i += 1 {
+        mun := &munnees[i]
+
+        dir := linalg.vector_normalize(pos-mun.pos)
+        dist := linalg.distance(mun.pos, pos)
+        if dist < 62 {
+            mun.pos += dir * math.pow(1/dist-.016, 2) * update_delta * 400000
+        }
+
+        if dist < 16 {
+            dolla_dolla += mun.amt
+            unordered_remove(munnees, i)
+            i -= 1
+        }
+    }
+}
+
 update_bullets :: proc() {
     for i := 0; i < len(boolets); i += 1 {
         blt := &boolets[i]
@@ -177,7 +206,7 @@ update_bullets :: proc() {
         blt.pos += blt.dir * 512 * update_delta
 
         if blt.pos.x < 0 || blt.pos.x > 1280 || blt.pos.y < 0 || blt.pos.y > 720 {
-            ordered_remove(boolets, i)
+            unordered_remove(boolets, i)
             i -= 1
         }
     }
@@ -226,8 +255,15 @@ update_enemies :: proc() {
         was_hit = false
         for j := 0; j < len(boolets); j += 1 {
             if linalg.distance(enm.pos,boolets[j].pos) < 16 {
+                append(munnees, munee{
+                    pos = enm.pos,
+                    amt = rand.uint32()
+                })
+
+
                 unordered_remove(enemies,i)
                 unordered_remove(boolets,j)
+
                 was_hit = true
                 break
             }
