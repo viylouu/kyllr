@@ -146,6 +146,10 @@ update_player :: proc() {
         if inp.is_key_down(rl.KeyboardKey.S) { pos.y += spd * update_delta }
         if inp.is_key_down(rl.KeyboardKey.A) { pos.x -= spd * update_delta }
         if inp.is_key_down(rl.KeyboardKey.D) { pos.x += spd * update_delta }
+
+        // restrict player to area of game
+        pos.x = (pos.x < 16)? 16 : ( (pos.x > 640-16)? 640-16 : pos.x )
+        pos.y = (pos.y < 16)? 16 : ( (pos.y > 360-16)? 360-16 : pos.y )
     }
 
     /* weapon */ {
