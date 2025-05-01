@@ -6,6 +6,7 @@ import sdl "vendor:sdl2"
 rend: ^sdl.Renderer
 
 cur_col: rl.Color
+txt_scl: i32
 
 clear :: proc(r,g,b: u8) {
     rl.ClearBackground(rl.Color{r,g,b,1})
@@ -13,6 +14,10 @@ clear :: proc(r,g,b: u8) {
 
 fill :: proc(r,g,b: u8, a: u8 = 255) {
     cur_col = rl.Color{r,g,b,a}
+}
+
+text_size :: proc(size: i32) {
+    txt_scl = size
 }
 
 point :: proc(x,y: i32) {
@@ -75,4 +80,11 @@ rento_rentex :: proc(tex: rl.RenderTexture2D, render: proc()) {
     rl.BeginTextureMode(tex)
         render()
     rl.EndTextureMode()
+}
+
+text :: proc(text: cstring, x,y:i32) {
+    rl.DrawText(text, x,y, txt_scl, cur_col)
+}
+ftext :: proc(text: cstring, x,y:f32) {
+    rl.DrawText(text, i32(x),i32(y), txt_scl, cur_col)
 }

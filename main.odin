@@ -139,6 +139,7 @@ buf: [19]u8
 draw :: proc() {
     draw_to_scrn :: proc() {
         rl.ClearBackground(rl.BLACK)
+        d.text_size(20)
 
         d.fill(0,255,0)
         d.frect(pos.x-16,pos.y-16,32,32)
@@ -171,16 +172,20 @@ draw :: proc() {
         }
 
         if shop_open {
-            rl.DrawRectangle(48,48,640-96,360-96, rl.Color{ 255,255,255,100 })
+            d.fill(255,255,255,100)
+            d.rect(48,48,640-96,360-96)
 
             shoot_cooldown = 1/(f32(shoot_speed_lvl)/10+.1)/30
         }
 
         if paused {
-            rl.DrawText("PAUSED", 0,360-20,20, rl.ORANGE)
+            d.fill(255,127,0)
+            d.text("PAUSED", 0,360-20)        
         }
 
-        rl.DrawText(strings.clone_to_cstring(strconv.append_int(buf[:], i64(dolla_dolla), 10)), 0, 20, 20, rl.DARKGREEN)
+        d.fill(0,127,0)
+        d.text(strings.clone_to_cstring(strconv.append_int(buf[:], i64(dolla_dolla), 10)), 0, 20)
+
         rl.DrawFPS(0,0)
 
     }
