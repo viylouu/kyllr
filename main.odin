@@ -71,6 +71,16 @@ update_cooled: f32 = 0
 ren_targ: rl.RenderTexture2D
 
 
+/// ----   shop   ---- ///
+shop_open: b8
+shop_opening: b8
+
+
+/// ----   misc   ---- ///
+paused: b8
+pausing: b8
+
+
 main :: proc() { kuru.master("kyllr", 1280,720, init,tick,draw,quit) }
 
 init :: proc() { 
@@ -86,16 +96,35 @@ init :: proc() {
 tick :: proc() {
     delta = f32(rl.GetFrameTime())
 
+    if !inp.is_key_down(rl.KeyboardKey.ESCAPE) {
+        pausing = false
+    } else {
+        if !pausing {
+            paused = !paused
+        }   pausing = true
+    }
+
+    if paused {
+        return
+    }
+
+    if !inp.is_key_down(rl.KeyboardKey.TAB) {
+        shop_opening = false
+    } else {
+        if !shop_opening {
+            shop_open = !shop_open
+        }   shop_opening = true
+    }
+
     update_cooled += delta
 
     for update_cooled >= update_delta {
-        update_player()
-
-        update_enemies()
-
-        update_bullets()
-
-        update_munnees()
+        if !shop_open {
+            update_player()
+            update_enemies()
+            update_bullets()
+            update_munnees()
+        }
 
         update_cooled -= update_delta
     }
@@ -130,7 +159,21 @@ draw :: proc() {
         /* moneys */ {
             d.fill(255,0,255)
 
-            for i := 0; i < len(munnees); i += 1 { d.frect(munnees[i].pos.x-2,munnees[i].pos.y-2,4,4) }
+            for i := 0; i < len(munnees); i += 1 { 
+                scl := f32(munnees[i].amt)
+                scl = math.pow(scl,1.35)
+                scl *= 0.25
+                scl += 3
+                d.fcirc(munnees[i].pos.x-scl/2,munnees[i].pos.y-scl/2,scl) 
+            }
+        }
+
+        if shop_open {
+            rl.DrawRectangle(48,48,640-96,360-96, rl.Color{ 255,255,255,100 })
+        }
+
+        if paused {
+            rl.DrawText("PAUSED", 0,360-20,20, rl.ORANGE)
         }
 
         rl.DrawText(strings.clone_to_cstring(strconv.append_int(buf[:], i64(dolla_dolla), 10)), 0, 20, 20, rl.DARKGREEN)
@@ -166,14 +209,14 @@ update_player :: proc() {
     /* weapon */ {
         mx,my := inp.mouse_x/2, inp.mouse_y/2
 
-        gun_pos = pos + 48* linalg.vector_normalize(vec2{mx,my}-pos)\
+        gun_pos = pos + 48* linalg.vector_normalize(vec2{mx,my}-pos)
 
         shoot_cooled += update_delta
 
         if inp.is_mouse_down(rl.MouseButton.LEFT) && shoot_cooled >= shoot_cooldown {
             append(boolets, boolet{
                 pos = gun_pos,
-                dir = (gun_pos-pos) /48
+                dir = linalg.vector_normalize(gun_pos-pos)
             })
 
             shoot_cooled = 0
@@ -257,7 +300,7 @@ update_enemies :: proc() {
             if linalg.distance(enm.pos,boolets[j].pos) < 16 {
                 append(munnees, munee{
                     pos = enm.pos,
-                    amt = rand.uint32()
+                    amt = u32(rand.int31_max(9)+1)
                 })
 
 
