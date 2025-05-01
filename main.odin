@@ -98,7 +98,7 @@ init :: proc() {
 tick :: proc() {
     delta = f32(rl.GetFrameTime())
 
-    if !inp.is_key_down(rl.KeyboardKey.ESCAPE) {
+    if !inp.is_key_down(rl.KeyboardKey.TAB) {
         pausing = false
     } else {
         if !pausing {
@@ -110,7 +110,7 @@ tick :: proc() {
         return
     }
 
-    if !inp.is_key_down(rl.KeyboardKey.TAB) {
+    if !inp.is_key_down(rl.KeyboardKey.SPACE) {
         shop_opening = false
     } else {
         if !shop_opening {
