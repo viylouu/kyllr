@@ -137,7 +137,7 @@ gun_pos: vec2
 buf: [19]u8
 
 draw :: proc() {
-    rl.BeginTextureMode(ren_targ)
+    draw_to_scrn :: proc() {
         rl.ClearBackground(rl.BLACK)
 
         d.fill(0,255,0)
@@ -173,7 +173,7 @@ draw :: proc() {
         if shop_open {
             rl.DrawRectangle(48,48,640-96,360-96, rl.Color{ 255,255,255,100 })
 
-            shoot_cooldown = 1/(shoot_speed_lvl/10+.1)/30
+            shoot_cooldown = 1/(f32(shoot_speed_lvl)/10+.1)/30
         }
 
         if paused {
@@ -182,7 +182,10 @@ draw :: proc() {
 
         rl.DrawText(strings.clone_to_cstring(strconv.append_int(buf[:], i64(dolla_dolla), 10)), 0, 20, 20, rl.DARKGREEN)
         rl.DrawFPS(0,0)
-    rl.EndTextureMode()
+
+    }
+
+    d.rento_rentex(ren_targ, draw_to_scrn)
 
     rl.DrawTexturePro(ren_targ.texture, rl.Rectangle{0,360,640,-360}, rl.Rectangle{0,0,1280,720}, rl.Vector2{0,0}, 0, rl.WHITE)
 }

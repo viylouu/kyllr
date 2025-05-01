@@ -70,3 +70,9 @@ image_sd :: proc(tex: rl.Texture2D, sx,sy,sw,sh, dx,dy,dw,dh: f32) {
         rl.Vector2{}, 0, cur_col
     )
 }
+
+rento_rentex :: proc(tex: rl.RenderTexture2D, render: proc()) {
+    rl.BeginTextureMode(tex)
+        render()
+    rl.EndTextureMode()
+}
