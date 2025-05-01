@@ -75,6 +75,8 @@ ren_targ: rl.RenderTexture2D
 shop_open: b8
 shop_opening: b8
 
+shoot_speed_lvl: u8 = 1
+
 
 /// ----   misc   ---- ///
 paused: b8
@@ -170,6 +172,8 @@ draw :: proc() {
 
         if shop_open {
             rl.DrawRectangle(48,48,640-96,360-96, rl.Color{ 255,255,255,100 })
+
+            shoot_cooldown = 1/(shoot_speed_lvl/10+.1)/30
         }
 
         if paused {
