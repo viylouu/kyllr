@@ -75,7 +75,9 @@ ren_targ: rl.RenderTexture2D
 shop_open: b8
 shop_opening: b8
 
-shoot_speed_lvl: u8 = 1
+buying_item: b8
+
+shoot_speed_lvl: u8 = 0
 
 
 /// ----   misc   ---- ///
@@ -118,11 +120,30 @@ tick :: proc() {
         }   shop_opening = true
     }
 
+    mx,my := inp.mouse_x/2, inp.mouse_y/2
+
+    if shop_open {
+        if !inp.is_mouse_down(rl.MouseButton.LEFT) {
+            buying_item = false
+        } else {
+            if !buying_item { 
+                // shoot speed
+                if dolla_dolla >= 1 && shoot_speed_lvl != 255 && mx > 64 && my > 64 && mx < 640-64 && my < 128 {
+                    shoot_speed_lvl += 1
+                    dolla_dolla     -= 1
+                }
+
+            }   buying_item = true
+        }
+
+        return
+    }
+
     update_cooled += delta
 
     for update_cooled >= update_delta {
         if !shop_open {
-            update_player()
+            update_player(mx,my)
             update_enemies()
             update_bullets()
             update_munnees()
@@ -176,6 +197,21 @@ draw :: proc() {
             d.rect(48,48,640-96,360-96)
 
             shoot_cooldown = 1/(f32(shoot_speed_lvl)/10+.1)/30
+
+            text: cstring
+
+            /* fire rate */ {
+                d.rect(64,64,640-128,64)
+                d.fill(0,0,0)
+                if shoot_speed_lvl == 255 {
+                    text = "FIRE RATE (LVL MAX)"
+                } else {
+                    text = strings.clone_to_cstring(strings.concatenate([]string{"FIRE RATE (LVL ", strconv.append_uint(buf[:], u64(shoot_speed_lvl), 10), ")"}))
+                }
+
+                d.text(text, 72,82)
+            }
+
         }
 
         if paused {
@@ -204,7 +240,7 @@ quit :: proc() {
 }
 
 
-update_player :: proc() {
+update_player :: proc(mx,my: f32) {
     /* movement */ {
         spd :f32: 128
 
@@ -219,19 +255,19 @@ update_player :: proc() {
     }
 
     /* weapon */ {
-        mx,my := inp.mouse_x/2, inp.mouse_y/2
-
         gun_pos = pos + 48* linalg.vector_normalize(vec2{mx,my}-pos)
 
         shoot_cooled += update_delta
 
-        if inp.is_mouse_down(rl.MouseButton.LEFT) && shoot_cooled >= shoot_cooldown {
-            append(boolets, boolet{
-                pos = gun_pos,
-                dir = linalg.vector_normalize(gun_pos-pos)
-            })
+        if inp.is_mouse_down(rl.MouseButton.LEFT) {
+            for shoot_cooled >= shoot_cooldown {
+                append(boolets, boolet{
+                    pos = gun_pos - ((gun_pos-pos)/48 * rand.float32_range(-2,2)),
+                    dir = linalg.vector_normalize(gun_pos-pos)
+                })
 
-            shoot_cooled = 0
+                shoot_cooled -= shoot_cooldown
+            }
         }
     }
 }
